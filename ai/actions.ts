@@ -71,8 +71,8 @@ const tokenResponse = await fetch('https://test.api.amadeus.com/v1/security/oaut
   },
   body: new URLSearchParams({
     'grant_type': 'client_credentials',
-    'client_id': process.env.AMADEUS_API_KEY,  
-    'client_secret': process.env.AMADEUS_API_SECRET 
+    'client_id': process.env.AMADEUS_API_KEY || '',  
+    'client_secret': process.env.AMADEUS_API_SECRET || '' 
   })
 });
 
