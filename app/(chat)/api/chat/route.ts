@@ -92,6 +92,7 @@ export async function POST(request: Request) {
           destination: z.string().describe("Destination airport or city"),
         }),
         execute: async ({ origin, destination }) => {
+          console.log("atleast here?")
           const results = await generateSampleFlightSearchResults({
             origin,
             destination,
