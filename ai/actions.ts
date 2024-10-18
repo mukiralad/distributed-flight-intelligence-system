@@ -52,20 +52,16 @@ export async function generateSampleFlightSearchResults({
     const today = '2024-12-31' // 'YYYY-MM-DD' format
 
 // Step 2: Obtain access token for Amadeus API
-if (!process.env.AMADEUS_API_KEY || !process.env.AMADEUS_API_SECRET) {
-  throw new Error('Amadeus API credentials are not set');
-}
-
 const tokenResponse = await fetch('https://test.api.amadeus.com/v1/security/oauth2/token', {
   method: 'POST',
   headers: {
-    'Content-Type': 'application/x-www-form-urlencoded',
+    'Content-Type': 'application/x-www-form-urlencoded'
   },
   body: new URLSearchParams({
     'grant_type': 'client_credentials',
-    'client_id': process.env.AMADEUS_API_KEY as string,  
-    'client_secret': process.env.AMADEUS_API_SECRET as string,
-  }),
+    'client_id': process.env.AMADEUS_API_KEY,  
+    'client_secret': process.env.AMADEUS_API_SECRET 
+  })
 });
 
 
