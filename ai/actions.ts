@@ -3,6 +3,18 @@ import { z } from "zod";
 
 import { geminiFlashModel } from ".";
 
+// Add this method at the top of the file or before its first usage
+function convertISO8601ToHours(duration: string): number {
+  const match = duration.match(/PT(\d+H)?(\d+M)?/);
+  if (!match) return 0;
+
+  const hours = parseInt(match[1] || '0', 10);
+  const minutes = parseInt(match[2] || '0', 10);
+
+  // Calculate total hours and round to 2 decimal places
+  return parseFloat((hours + minutes / 60).toFixed(2));
+}
+
 export async function generateSampleFlightStatus({
   flightNumber,
   date,
@@ -77,7 +89,7 @@ const tokenResponse = await fetch('https://test.api.amadeus.com/v1/security/oaut
       adults: '1',
       travelClass: 'ECONOMY',
       currencyCode: 'USD',
-      returnDate: '2025-02-04',
+      //returnDate: '2025-02-04',
       max: '250',
       nonStop: 'false'
     });
@@ -101,7 +113,7 @@ const tokenResponse = await fetch('https://test.api.amadeus.com/v1/security/oaut
     
     // Step 5: Transform the raw flight data into the expected schema
     const flightSearchResults = rawFlightData.data.slice(0, 4).map((offer: any) => {
-      const { price, itineraries, validatingAirlineCodes } = offer;
+      const { price, itineraries, validatingAirlineCodes, oneWay } = offer;
       const { total } = price;
 
       // Extract the segments (departure and arrival details)
@@ -126,6 +138,8 @@ const tokenResponse = await fetch('https://test.api.amadeus.com/v1/security/oaut
         ), // Map carrier codes to airline names
         priceInUSD: parseFloat(total), // Flight price in USD
         numberOfStops: segments.length - 1, // Number of stops
+        duration: convertISO8601ToHours(itineraries[0].duration),
+        isOneWay: queryParams.has('returnDate')? false : true 
       };
     });
     console.log()

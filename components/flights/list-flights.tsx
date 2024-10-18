@@ -20,6 +20,7 @@ const SAMPLE = {
       airlines: ["United Airlines", "Lufthansa"],
       priceInUSD: 1200.5,
       numberOfStops: 1,
+      isOneWay: false,
     },
     {
       id: "result_2",
@@ -80,12 +81,12 @@ export function ListFlights({
   chatId: string;
   results?: typeof SAMPLE;
 }) {
+  console.log("list flights", results);
   const { append } = useChat({
     id: chatId,
     body: { id: chatId },
     maxSteps: 5,
   });
-
   return (
     <div className="rounded-lg bg-muted px-4 py-1.5 flex flex-col">
       {results.flights.map((flight) => (
@@ -120,11 +121,7 @@ export function ListFlights({
           <div className="flex flex-col gap-0.5 justify-between">
             <div className="flex flex-row gap-2">
               <div className="text-base sm:text-base">
-                {differenceInHours(
-                  new Date(flight.arrival.timestamp),
-                  new Date(flight.departure.timestamp),
-                )}{" "}
-                hr
+                  {flight.duration}hr
               </div>
             </div>
             <div className="text-xs sm:text-sm text-muted-foreground flex flex-row">
@@ -141,7 +138,7 @@ export function ListFlights({
               </div>
             </div>
             <div className="text-xs sm:text-sm text-muted-foreground flex flex-row">
-              Round Trip
+              {flight.isOneWay ? "One Way" : "Round Trip"}
             </div>
           </div>
         </div>
