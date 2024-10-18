@@ -121,7 +121,7 @@ export function ListFlights({
           <div className="flex flex-col gap-0.5 justify-between">
             <div className="flex flex-row gap-2">
               <div className="text-base sm:text-base">
-                  {((flight.totalDurationInMinutes ?? 0) / 60).toFixed(1)}hr
+                  {((flight.duration))}hr
               </div>
             </div>
             <div className="text-xs sm:text-sm text-muted-foreground flex flex-row">
