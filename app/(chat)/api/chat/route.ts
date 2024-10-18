@@ -88,14 +88,16 @@ export async function POST(request: Request) {
       searchFlights: {
         description: "Search for flights based on the given parameters",
         parameters: z.object({
-          origin: z.string().describe("Origin airport or city"),
-          destination: z.string().describe("Destination airport or city"),
+          origin: z.string().describe("IATA code of the origin airport "),
+          destination: z.string().describe("IATA code of the destination airport"),
+          departureDate: z.string().describe("Departure date in YYYY-MM-DD format")
         }),
-        execute: async ({ origin, destination }) => {
+        execute: async ({ origin, destination, departureDate }) => {
           console.log("atleast here?")
           const results = await generateSampleFlightSearchResults({
             origin,
             destination,
+            departureDate,
           });
 
           return results;

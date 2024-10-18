@@ -55,11 +55,15 @@ export async function generateSampleFlightStatus({
 export async function generateSampleFlightSearchResults({
   origin,
   destination,
+  departureDate
 }: {
   origin: string;
   destination: string;
+  departureDate: string
 }) {
   try {
+
+    console.log(departureDate)
     // Step 1: Get today's date in the format required by Amadeus API (YYYY-MM-DD)
     const today = '2024-12-31' // 'YYYY-MM-DD' format
 
@@ -81,11 +85,13 @@ const tokenResponse = await fetch('https://test.api.amadeus.com/v1/security/oaut
     if (!tokenData.access_token) throw new Error('Failed to obtain access token');
     const accessToken = tokenData.access_token;
 
+    console.log(accessToken)
+
     // Step 3: Prepare the query parameters with defaults (departureDate = today, adults = 1, travelClass = "ECONOMY")
     const queryParams = new URLSearchParams({
       originLocationCode: origin,
       destinationLocationCode: destination,
-      departureDate: today,
+      departureDate: departureDate,
       adults: '1',
       travelClass: 'ECONOMY',
       currencyCode: 'USD',
@@ -94,7 +100,7 @@ const tokenResponse = await fetch('https://test.api.amadeus.com/v1/security/oaut
       nonStop: 'false'
     });
 
-    // Step 4: Call Amadeus API for flight offers
+    console.log(`curl -X GET 'https://test.api.amadeus.com/v2/shopping/flight-offers?${queryParams.toString()}' -H 'Authorization: Bearer ${accessToken}' -H 'Content-Type: application/json'`);
     const amadeusResponse = await fetch(`https://test.api.amadeus.com/v2/shopping/flight-offers?${queryParams.toString()}`, {
       method: 'GET',
       headers: {
