@@ -63,51 +63,20 @@ export async function generateSampleFlightSearchResults({
 }) {
   try {
 
-    console.log(departureDate)
-    // Step 1: Get today's date in the format required by Amadeus API (YYYY-MM-DD)
-    const today = '2024-12-31' // 'YYYY-MM-DD' format
-
-// Step 2: Obtain access token for Amadeus API
-const tokenResponse = await fetch('https://test.api.amadeus.com/v1/security/oauth2/token', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/x-www-form-urlencoded'
-  },
-  body: new URLSearchParams({
-    'grant_type': 'client_credentials',
-    'client_id': process.env.AMADEUS_API_KEY || '',  
-    'client_secret': process.env.AMADEUS_API_SECRET || '' 
-  })
-});
-
-
-    const tokenData = await tokenResponse.json();
-    if (!tokenData.access_token) throw new Error('Failed to obtain access token');
-    const accessToken = tokenData.access_token;
-
-    console.log(accessToken)
-
-    // Step 3: Prepare the query parameters with defaults (departureDate = today, adults = 1, travelClass = "ECONOMY")
+    console.log(origin, destination, departureDate)
+    console.log(process.env.SERP_API_KEY)
     const queryParams = new URLSearchParams({
-      originLocationCode: origin,
-      destinationLocationCode: destination,
-      departureDate: departureDate,
-      adults: '1',
-      travelClass: 'ECONOMY',
-      currencyCode: 'USD',
-      //returnDate: '2025-02-04',
-      max: '250',
-      nonStop: 'false'
+      api_key: process.env.SERP_API_KEY || '',
+      departure_id: origin,
+      arrival_id: destination,
+      outbound_date: departureDate
     });
-
-    console.log(`curl -X GET 'https://test.api.amadeus.com/v2/shopping/flight-offers?${queryParams.toString()}' -H 'Authorization: Bearer ${accessToken}' -H 'Content-Type: application/json'`);
-    const amadeusResponse = await fetch(`https://test.api.amadeus.com/v2/shopping/flight-offers?${queryParams.toString()}`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json'
-      }
+    
+    const amadeusResponse = await fetch(`https://serpapi.com/search?engine=google_flights&${queryParams.toString()}`, {
+      method: 'GET'
     });
+    
+    console.log("API Response",amadeusResponse)
 
     if (!amadeusResponse.ok) {
       throw new Error('Failed to fetch flight data');
@@ -115,7 +84,7 @@ const tokenResponse = await fetch('https://test.api.amadeus.com/v1/security/oaut
 
     const rawFlightData = await amadeusResponse.json();
 
-    console.log(rawFlightData.data.slice(0,4))
+    console.log(rawFlightData)
     
     // Step 5: Transform the raw flight data into the expected schema
     const flightSearchResults = rawFlightData.data.slice(0, 4).map((offer: any) => {
@@ -148,7 +117,6 @@ const tokenResponse = await fetch('https://test.api.amadeus.com/v1/security/oaut
         isOneWay: queryParams.has('returnDate')? false : true 
       };
     });
-    console.log()
 
     return { flights: flightSearchResults };
 

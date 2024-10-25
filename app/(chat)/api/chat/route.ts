@@ -109,6 +109,7 @@ export async function POST(request: Request) {
           flightNumber: z.string().describe("Flight number"),
         }),
         execute: async ({ flightNumber }) => {
+          console.log("card here")
           const seats = await generateSampleSeatSelection({ flightNumber });
           return seats;
         },
