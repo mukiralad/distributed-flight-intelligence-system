@@ -67,58 +67,63 @@ export async function generateSampleFlightSearchResults({
     console.log(process.env.SERP_API_KEY)
     const queryParams = new URLSearchParams({
       api_key: process.env.SERP_API_KEY || '',
+      engine: 'google_flights',
       departure_id: origin,
       arrival_id: destination,
-      outbound_date: departureDate
+      outbound_date: departureDate,
+      type: '2'
     });
     
-    const amadeusResponse = await fetch(`https://serpapi.com/search?engine=google_flights&${queryParams.toString()}`, {
+    const response = await fetch(`https://serpapi.com/search?${queryParams.toString()}`, {
       method: 'GET'
     });
     
-    console.log("API Response",amadeusResponse)
+    
+    console.log("API Response",response)
 
-    if (!amadeusResponse.ok) {
+    if (!response.ok) {
       throw new Error('Failed to fetch flight data');
     }
 
-    const rawFlightData = await amadeusResponse.json();
+    const rawFlightData = await response.json();
 
     console.log(rawFlightData)
     
     // Step 5: Transform the raw flight data into the expected schema
-    const flightSearchResults = rawFlightData.data.slice(0, 4).map((offer: any) => {
-      const { price, itineraries, validatingAirlineCodes, oneWay } = offer;
-      const { total } = price;
-
-      // Extract the segments (departure and arrival details)
-      const segments = itineraries[0].segments;
-      const departureSegment = segments[0]; // First segment is the departure
-      const arrivalSegment = segments[segments.length - 1]; // Last segment is the arrival
-
+    const flightSearchResults = rawFlightData.best_flights.slice(0, 4).map((offer: any) => {
+      const flight = offer.flights[0];
+      const { departure_airport, arrival_airport, airline, travel_class, flight_number, overnight, duration } = flight;
+    
+      // Convert duration from minutes to hours and minutes format
+      const hours = Math.floor(duration / 60);
+      const minutes = duration % 60;
+      const formattedDuration = `${hours}.${minutes}`;
+    
       return {
-        id: offer.id, // Flight ID
+        id: offer.booking_token, // Unique booking identifier
         departure: {
-          cityName: rawFlightData.dictionaries.locations[departureSegment.departure.iataCode]?.cityCode || "Unknown",
-          airportCode: departureSegment.departure.iataCode,
-          timestamp: departureSegment.departure.at,
+          airportName: departure_airport.name || "Unknown",
+          airportCode: departure_airport.id || "Unknown",
+          timestamp: departure_airport.time || "Unknown",
         },
         arrival: {
-          cityName: rawFlightData.dictionaries.locations[arrivalSegment.arrival.iataCode]?.cityCode || "Unknown",
-          airportCode: arrivalSegment.arrival.iataCode,
-          timestamp: arrivalSegment.arrival.at,
+          airportName: arrival_airport.name || "Unknown",
+          airportCode: arrival_airport.id || "Unknown",
+          timestamp: arrival_airport.time || "Unknown",
         },
-        airlines: validatingAirlineCodes.map(
-          (code: string) => rawFlightData.dictionaries.carriers[code] || code
-        ), // Map carrier codes to airline names
-        priceInUSD: parseFloat(total), // Flight price in USD
-        numberOfStops: segments.length - 1, // Number of stops
-        duration: convertISO8601ToHours(itineraries[0].duration),
-        isOneWay: queryParams.has('returnDate')? false : true 
+        airlines: [airline], // Airline name in array format for consistency
+        priceInUSD: parseFloat(offer.price) || 0, // Price in USD
+        travelClass: travel_class || "Unknown", // Travel class
+        flightNumber: flight_number || "Unknown", // Flight number
+        overnight: overnight || false, // Indicates if the flight is overnight
+        duration: formattedDuration, // Total flight duration in hours and minutes
       };
     });
-
+    
     return { flights: flightSearchResults };
+    
+    
+    
 
   } catch (error) {
     console.error('Error fetching flight data:', error);
