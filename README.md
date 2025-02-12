@@ -4,6 +4,10 @@ A distributed AI-powered flight management system leveraging microservices archi
 
 ## Features
 
+![WhatsApp Image 2024-12-03 at 00 03 50_398d9036](https://github.com/user-attachments/assets/7f1e81e4-4b4c-41c3-97ef-caaddb18e0e7)
+
+![WhatsApp Image 2024-12-03 at 00 57 03_40704a24](https://github.com/user-attachments/assets/c31d6146-293f-4d1e-bd42-a797d7e09045)
+
 - **Distributed Architecture**
   - API Gateway for request routing & load balancing
   - Decoupled microservices for flight data & weather processing
